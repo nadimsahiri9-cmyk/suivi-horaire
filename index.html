@@ -46,6 +46,51 @@
                      disabled:opacity-40 disabled:cursor-not-allowed">
         🔴 Fin
       </button>
+      <button id="btnAjoutManuel"
+              class="flex-1 sm:flex-none sm:min-w-[200px] px-6 py-4 rounded-2xl text-white font-semibold text-base shadow-lg
+                     bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700
+                     focus:outline-none focus:ring-4 focus:ring-indigo-300
+                     transition-all duration-150 active:scale-96">
+        ➕ Ajouter manuellement
+      </button>
+    </div>
+
+    <!-- Formulaire ajout manuel -->
+    <div id="formAjoutManuel" class="hidden max-w-xl mx-auto mb-8 p-5 bg-white border border-indigo-200 rounded-2xl shadow-sm fade-in no-print">
+      <h3 class="text-base font-bold text-gray-800 mb-4">📝 Ajouter une entrée manuelle</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1" for="inputDate">Date</label>
+          <input type="date" id="inputDate"
+                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1" for="inputDebut">Début</label>
+          <input type="time" id="inputDebut"
+                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1" for="inputFin">Fin</label>
+          <input type="time" id="inputFin"
+                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-xs font-medium text-gray-500 mb-1" for="inputRemarque">Remarque <span class="text-gray-400">(optionnelle)</span></label>
+        <textarea id="inputRemarque" rows="2"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-vertical focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                  placeholder="Remarque…"></textarea>
+      </div>
+      <div class="flex gap-3 justify-end">
+        <button id="btnAnnulerAjout"
+                class="px-5 py-2 rounded-xl bg-white border border-gray-300 text-gray-700 font-medium text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors">
+          Annuler
+        </button>
+        <button id="btnValiderAjout"
+                class="px-5 py-2 rounded-xl bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-300 shadow-sm transition-colors">
+          ✅ Valider
+        </button>
+      </div>
     </div>
 
     <!-- Indicateur session en cours -->
@@ -132,6 +177,14 @@
       const totalHeures = $('totalHeures');
       const btnExportCSV = $('btnExportCSV');
       const btnEffacerTout = $('btnEffacerTout');
+      const btnAjoutManuel = $('btnAjoutManuel');
+      const formAjoutManuel = $('formAjoutManuel');
+      const inputDate = $('inputDate');
+      const inputDebut = $('inputDebut');
+      const inputFin = $('inputFin');
+      const inputRemarque = $('inputRemarque');
+      const btnValiderAjout = $('btnValiderAjout');
+      const btnAnnulerAjout = $('btnAnnulerAjout');
 
       // ---- Helpers ----
       function pad2(n) { return String(n).padStart(2, '0'); }
@@ -399,6 +452,92 @@
           e.preventDefault();
           if (!btnDepart.disabled) doDepart();
         }
+      });
+
+      // ---- Ajout manuel ----
+      function todayStr() {
+        const d = new Date();
+        return d.getFullYear() + '-' +
+               String(d.getMonth() + 1).padStart(2, '0') + '-' +
+               String(d.getDate()).padStart(2, '0');
+      }
+
+      function resetFormAjout() {
+        inputDate.value = todayStr();
+        inputDebut.value = '';
+        inputFin.value = '';
+        inputRemarque.value = '';
+      }
+
+      function showFormAjout() {
+        resetFormAjout();
+        formAjoutManuel.classList.remove('hidden');
+        inputDebut.focus();
+      }
+
+      function hideFormAjout() {
+        formAjoutManuel.classList.add('hidden');
+      }
+
+      function doValiderAjout() {
+        const dateVal = inputDate.value.trim();
+        const debutVal = inputDebut.value.trim();
+        const finVal = inputFin.value.trim();
+        const remarqueVal = inputRemarque.value.trim();
+
+        if (!dateVal || !debutVal || !finVal) {
+          alert('Veuillez remplir la date, le début et la fin.');
+          return;
+        }
+
+        if (hasActiveSession()) {
+          alert('Une session est déjà en cours. Terminez-la d\'abord ou supprimez-la avant d\'ajouter une entrée manuelle.');
+          return;
+        }
+
+        // Construire des ISO à partir de la date et des heures
+        const startISO = dateVal + 'T' + debutVal + ':00';
+        const endISO   = dateVal + 'T' + finVal   + ':00';
+
+        // Vérifier que début < fin
+        if (new Date(endISO) <= new Date(startISO)) {
+          alert('L\'heure de fin doit être après l\'heure de début.');
+          return;
+        }
+
+        sessions.push({
+          start: startISO,
+          end: endISO,
+          remark: remarqueVal
+        });
+        save();
+        hideFormAjout();
+        render();
+      }
+
+      btnAjoutManuel.addEventListener('click', function() {
+        if (formAjoutManuel.classList.contains('hidden')) {
+          showFormAjout();
+        } else {
+          // Si déjà ouvert, on le referme
+          hideFormAjout();
+        }
+      });
+
+      btnValiderAjout.addEventListener('click', doValiderAjout);
+
+      btnAnnulerAjout.addEventListener('click', function() {
+        hideFormAjout();
+      });
+
+      // Appui sur Enter dans un des champs → valider
+      [inputDate, inputDebut, inputFin, inputRemarque].forEach(el => {
+        el.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            doValiderAjout();
+          }
+        });
       });
 
       // ---- Bind buttons ----
