@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Suivi Horaire — Nadim</title>
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <style>
+    @media print { .no-print { display: none !important; } }
+    .btn-depart { transition: all 0.15s ease; }
+    .btn-depart:active { transform: scale(0.96); }
+    .btn-fin { transition: all 0.15s ease; }
+    .btn-fin:active { transform: scale(0.96); }
+    .remark-textarea { min-height: 2.5rem; resize: vertical; font-size: 0.875rem; }
+    .fade-in { animation: fadeIn 0.25s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+    .total-badge { background: linear-gradient(135deg, #1e3a5f, #2563eb); }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+        ⏱ Suivi Horaire — Nadim
+      </h1>
+      <p class="text-gray-500 mt-1 text-sm">Cliquez sur <strong>Départ</strong> pour débuter, puis <strong>Fin</strong> pour terminer.</p>
+    </header>
+
+    <!-- Actions -->
+    <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8 no-print">
+      <button id="btnDepart"
+              class="btn-depart flex-1 sm:flex-none sm:min-w-[200px] px-8 py-5 rounded-2xl text-white font-bold text-xl shadow-lg
+                     bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700
+                     focus:outline-none focus:ring-4 focus:ring-emerald-300
+                     disabled:opacity-40 disabled:cursor-not-allowed">
+        🟢 Départ
+      </button>
+      <button id="btnFin"
+              class="btn-fin flex-1 sm:flex-none sm:min-w-[200px] px-8 py-5 rounded-2xl text-white font-bold text-xl shadow-lg
+                     bg-red-600 hover:bg-red-500 active:bg-red-700
+                     focus:outline-none focus:ring-4 focus:ring-red-300
+                     disabled:opacity-40 disabled:cursor-not-allowed">
+        🔴 Fin
+      </button>
+    </div>
+
+    <!-- Indicateur session en cours -->
+    <div id="sessionIndicator" class="hidden text-center mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl fade-in">
+      <p class="text-blue-800 font-semibold text-sm sm:text-base">
+        ⏳ Session en cours — Début : <span id="sessionStartDisplay" class="font-mono text-blue-900"></span>
+      </p>
+    </div>
+
+    <!-- Tableau -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-100 text-gray-600 uppercase text-xs tracking-wider">
+            <tr>
+              <th class="px-3 py-3 text-left">Date</th>
+              <th class="px-3 py-3 text-left">Début</th>
+              <th class="px-3 py-3 text-left">Fin</th>
+              <th class="px-3 py-3 text-left">Durée</th>
+              <th class="px-3 py-3 text-left w-full min-w-[140px]">Remarque</th>
+              <th class="px-3 py-3 text-center no-print w-10">Suppr.</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody" class="divide-y divide-gray-100"></tbody>
+        </table>
+      </div>
+
+      <!-- Empty state -->
+      <div id="emptyState" class="text-center py-12 text-gray-400">
+        <p class="text-4xl mb-2">📋</p>
+        <p class="text-sm">Aucune session enregistrée. Cliquez sur <strong>Départ</strong> pour commencer.</p>
+      </div>
+    </div>
+
+    <!-- Footer totals + export -->
+    <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 no-print">
+      <div id="totalContainer" class="hidden">
+        <span class="total-badge inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white text-sm font-semibold shadow">
+          <span>📊 Total</span>
+          <span id="totalHeures" class="font-mono">0h 00min</span>
+        </span>
+        <span class="text-gray-400 text-xs ml-2">(sessions)</span>
+      </div>
+
+      <div class="flex gap-3">
+        <button id="btnExportCSV"
+                class="px-5 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 font-medium text-sm
+                       hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300
+                       shadow-sm transition-colors">
+          ⬇ Exporter CSV
+        </button>
+        <button id="btnEffacerTout"
+                class="px-5 py-2.5 rounded-xl bg-white border border-red-200 text-red-600 font-medium text-sm
+                       hover:bg-red-50 hover:border-red-300 focus:outline-none focus:ring-2 focus:ring-red-200
+                       shadow-sm transition-colors">
+          🗑 Effacer tout
+        </button>
+      </div>
+    </div>
+
+    <!-- Footer signature -->
+    <p class="text-center text-xs text-gray-400 mt-10 border-t border-gray-100 pt-4">
+      Suivi Horaire — Nadim &nbsp;·&nbsp; Données stockées localement
+    </p>
+  </div>
+
+  <script>
+    (function() {
+      'use strict';
+
+      // ---- State ----
+      const STORAGE_KEY = 'suivi_horaire_nadim';
+      let sessions = [];
+
+      // ---- DOM refs ----
+      const $ = id => document.getElementById(id);
+      const tableBody  = $('tableBody');
+      const emptyState = $('emptyState');
+      const btnDepart  = $('btnDepart');
+      const btnFin     = $('btnFin');
+      const sessionIndicator = $('sessionIndicator');
+      const sessionStartDisplay = $('sessionStartDisplay');
+      const totalContainer = $('totalContainer');
+      const totalHeures = $('totalHeures');
+      const btnExportCSV = $('btnExportCSV');
+      const btnEffacerTout = $('btnEffacerTout');
+
+      // ---- Helpers ----
+      function pad2(n) { return String(n).padStart(2, '0'); }
+
+      function nowISO() {
+        const d = new Date();
+        const tzo = -d.getTimezoneOffset();
+        const sign = tzo >= 0 ? '+' : '-';
+        const pad = n => String(Math.abs(n)).padStart(2, '0');
+        return d.getFullYear() + '-' +
+               pad(d.getMonth() + 1) + '-' +
+               pad(d.getDate()) + 'T' +
+               pad(d.getHours()) + ':' +
+               pad(d.getMinutes()) + ':' +
+               pad(d.getSeconds()) +
+               sign + pad(Math.floor(tzo / 60)) + ':' + pad(tzo % 60);
+      }
+
+      function formatDate(iso) {
+        if (!iso) return '-';
+        const d = new Date(iso);
+        const day = pad2(d.getDate());
+        const mon = pad2(d.getMonth() + 1);
+        const year = d.getFullYear();
+        return `${day}/${mon}/${year}`;
+      }
+
+      function formatTime(iso) {
+        if (!iso) return '-';
+        const d = new Date(iso);
+        return pad2(d.getHours()) + 'h' + pad2(d.getMinutes());
+      }
+
+      function formatTimeFull(iso) {
+        if (!iso) return '-';
+        const d = new Date(iso);
+        return pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
+      }
+
+      function computeDuration(startISO, endISO) {
+        if (!startISO || !endISO) return { label: '-', totalMin: 0 };
+        const diff = new Date(endISO) - new Date(startISO);
+        if (diff < 0) return { label: '⚠ Invalide', totalMin: 0 };
+        const totalMin = Math.round(diff / 60000);
+        const h = Math.floor(totalMin / 60);
+        const m = totalMin % 60;
+        return { label: `${h}h ${pad2(m)}min`, totalMin };
+      }
+
+      // ---- Load / Save ----
+      function load() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          sessions = raw ? JSON.parse(raw) : [];
+          if (!Array.isArray(sessions)) sessions = [];
+        } catch (_) {
+          sessions = [];
+        }
+      }
+
+      function save() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+      }
+
+      // ---- Render ----
+      function hasActiveSession() {
+        return sessions.some(s => s.start && !s.end);
+      }
+
+      function render() {
+        const rows = [...sessions].reverse(); // plus récent en haut
+
+        if (rows.length === 0) {
+          tableBody.innerHTML = '';
+          emptyState.classList.remove('hidden');
+          totalContainer.classList.add('hidden');
+          btnDepart.disabled = false;
+          btnFin.disabled = true;
+          sessionIndicator.classList.add('hidden');
+          return;
+        }
+
+        emptyState.classList.add('hidden');
+
+        // Calcul du total
+        let totalMin = 0;
+        let sessionCount = 0;
+        rows.forEach(s => {
+          if (s.start && s.end) {
+            const dur = computeDuration(s.start, s.end);
+            totalMin += dur.totalMin;
+            sessionCount++;
+          }
+        });
+
+        if (sessionCount > 0) {
+          totalContainer.classList.remove('hidden');
+          const h = Math.floor(totalMin / 60);
+          const m = totalMin % 60;
+          totalHeures.textContent = `${h}h ${pad2(m)}min`;
+        } else {
+          totalContainer.classList.add('hidden');
+        }
+
+        // Vérifier session active
+        const active = hasActiveSession();
+        btnDepart.disabled = active;
+        btnFin.disabled = !active;
+
+        if (active) {
+          const activeSession = sessions.find(s => s.start && !s.end);
+          sessionIndicator.classList.remove('hidden');
+          sessionStartDisplay.textContent = formatTimeFull(activeSession.start);
+        } else {
+          sessionIndicator.classList.add('hidden');
+        }
+
+        // Build table HTML
+        let html = '';
+        let idx = sessions.length; // index original (non-inversé)
+
+        for (let i = rows.length - 1; i >= 0; i--) {
+          const s = rows[i];
+          idx--;
+
+          const dateLabel = formatDate(s.start);
+          const debut = s.start ? formatTimeFull(s.start) : '-';
+          const fin   = s.end   ? formatTimeFull(s.end)   : '—';
+          const dur   = s.start && s.end ? computeDuration(s.start, s.end).label : '—';
+          const remarque = s.remark || '';
+
+          const isActive = s.start && !s.end;
+
+          html += `<tr class="hover:bg-gray-50 transition-colors fade-in ${isActive ? 'bg-blue-50/50' : ''}" data-idx="${idx}">`;
+          html += `<td class="px-3 py-3 whitespace-nowrap font-medium text-gray-700">${dateLabel}</td>`;
+          html += `<td class="px-3 py-3 whitespace-nowrap font-mono text-xs ${isActive ? 'text-blue-700' : 'text-gray-600'}">${debut}</td>`;
+          html += `<td class="px-3 py-3 whitespace-nowrap font-mono text-xs ${isActive ? 'text-gray-400 italic' : 'text-gray-600'}">${fin}</td>`;
+          html += `<td class="px-3 py-3 whitespace-nowrap font-mono text-xs font-medium ${dur.includes('Invalide') ? 'text-amber-600' : 'text-gray-700'}">${dur}</td>`;
+          html += `<td class="px-3 py-3">`;
+          html += `<textarea data-idx="${idx}" class="remark-textarea w-full px-2 py-1.5 border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-gray-700" rows="1" placeholder="Remarque…">${remarque}</textarea>`;
+          html += `</td>`;
+          html += `<td class="px-3 py-3 text-center no-print">`;
+          html += `<button data-idx="${idx}" class="btn-delete px-2 py-1 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors text-lg" title="Supprimer">✕</button>`;
+          html += `</td>`;
+          html += `</tr>`;
+        }
+
+        tableBody.innerHTML = html;
+
+        // ---- Event listeners (delegated) ----
+        // Suppression
+        tableBody.querySelectorAll('.btn-delete').forEach(btn => {
+          btn.addEventListener('click', function(e) {
+            const idx = parseInt(this.dataset.idx, 10);
+            if (confirm('Supprimer cette ligne ?')) {
+              sessions.splice(idx, 1);
+              save();
+              render();
+            }
+          });
+        });
+
+        // Remarque textarea — auto-save + auto-resize
+        tableBody.querySelectorAll('.remark-textarea').forEach(ta => {
+          // Auto-resize
+          const autoResize = () => {
+            ta.style.height = 'auto';
+            ta.style.height = Math.max(ta.scrollHeight, 40) + 'px';
+          };
+          ta.addEventListener('input', function() {
+            const idx = parseInt(this.dataset.idx, 10);
+            sessions[idx].remark = this.value;
+            save();
+            autoResize();
+          });
+          // Init resize
+          autoResize();
+        });
+      }
+
+      // ---- Actions ----
+      function doDepart() {
+        if (hasActiveSession()) {
+          alert('Une session est déjà en cours. Terminez-la avant d\'en commencer une nouvelle.');
+          return;
+        }
+        sessions.push({
+          start: nowISO(),
+          end: null,
+          remark: ''
+        });
+        save();
+        render();
+      }
+
+      function doFin() {
+        const activeIdx = sessions.findIndex(s => s.start && !s.end);
+        if (activeIdx === -1) {
+          alert('Aucune session active. Cliquez sur "Départ" pour commencer.');
+          return;
+        }
+        sessions[activeIdx].end = nowISO();
+        save();
+        render();
+      }
+
+      function doExportCSV() {
+        if (sessions.length === 0) {
+          alert('Aucune donnée à exporter.');
+          return;
+        }
+
+        const BOM = '\uFEFF';
+        const header = 'Date;Début;Fin;Durée (heures);Durée (minutes);Remarque\n';
+        let totalMin = 0;
+
+        const lines = sessions.map(s => {
+          const date = formatDate(s.start);
+          const debut = s.start ? formatTime(s.start) : '';
+          const fin   = s.end   ? formatTime(s.end)   : '';
+          const dur   = computeDuration(s.start, s.end);
+          if (s.start && s.end) totalMin += dur.totalMin;
+          const remarque = (s.remark || '').replace(/"/g, '""');
+          // Durée en heures décimales, durée en minutes total
+          const heuresDecimales = dur.totalMin > 0 ? (dur.totalMin / 60).toFixed(2) : '';
+          const minutesTotal = dur.totalMin > 0 ? dur.totalMin : '';
+          return `${date};${debut};${fin};${heuresDecimales};${minutesTotal};"${remarque}"`;
+        }).join('\n');
+
+        const totalH = Math.floor(totalMin / 60);
+        const totalM = totalMin % 60;
+        const footer = `\nTOTAL;;;${(totalMin/60).toFixed(2)};${totalMin};${totalH}h ${pad2(totalM)}min`;
+
+        const csv = BOM + header + lines + footer;
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const dateStr = new Date().toISOString().slice(0, 10);
+        a.download = `suivi-horaire-nadim_${dateStr}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      function doEffacerTout() {
+        if (sessions.length === 0) return;
+        if (!confirm('⚠ Êtes-vous sûr de vouloir effacer TOUTES les données ? Cette action est irréversible.')) return;
+        if (!confirm('Confirmation finale : supprimer définitivement toutes les sessions ?')) return;
+        sessions = [];
+        save();
+        render();
+      }
+
+      // ---- Init ----
+      load();
+      render();
+
+      // ---- Keyboard shortcuts ----
+      document.addEventListener('keydown', function(e) {
+        // Ctrl+Enter → Départ, Shift+Enter → Fin (quand pas dans un textarea)
+        if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+          e.preventDefault();
+          if (!btnDepart.disabled) doDepart();
+        }
+      });
+
+      // ---- Bind buttons ----
+      btnDepart.addEventListener('click', doDepart);
+      btnFin.addEventListener('click', doFin);
+      btnExportCSV.addEventListener('click', doExportCSV);
+      btnEffacerTout.addEventListener('click', doEffacerTout);
+
+      // --- Expose to window for debug ---
+      window.__suivi = { sessions, load, save, render, doDepart, doFin };
+
+    })();
+  </script>
+</body>
+</html>
