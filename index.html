@@ -16,17 +16,27 @@
     .fade-in { animation: fadeIn 0.25s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
     .total-badge { background: linear-gradient(135deg, #1e3a5f, #2563eb); }
-    .btn-projet {
+    .btn-van {
       transition: all 0.15s ease;
       font-weight: 600;
     }
-    .btn-projet:active { transform: scale(0.94); }
-    .btn-projet.selected {
+    .btn-van:active { transform: scale(0.94); }
+    .btn-van.selected {
       box-shadow: 0 0 0 2px #6366f1, 0 0 0 4px rgba(99,102,241,0.3);
     }
-    .projet-input {
-      font-family: monospace;
-      letter-spacing: 0.05em;
+    .btn-van-row {
+      transition: all 0.15s ease;
+      font-weight: 600;
+      font-size: 0.7rem;
+      padding: 0.2rem 0.45rem;
+      border-radius: 0.375rem;
+      border: 1px solid transparent;
+      cursor: pointer;
+    }
+    .btn-van-row:active { transform: scale(0.92); }
+    .btn-van-row.selected {
+      box-shadow: 0 0 0 2px #6366f1, 0 0 0 3px rgba(99,102,241,0.25);
+      border-color: #6366f1;
     }
     /* dark scrollbar */
     ::-webkit-scrollbar { width: 8px; }
@@ -72,24 +82,20 @@
       </button>
     </div>
 
-    <!-- Projet selector + quick buttons (global) -->
+    <!-- Van quick buttons (global) -->
     <div class="flex flex-wrap items-center gap-2 justify-center mb-6 no-print">
-      <label class="text-sm font-medium text-gray-300 mr-1" for="projetGlobal">Projet</label>
-      <input type="text" id="projetGlobal"
-             class="projet-input w-24 px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-gray-100
-                    focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition-all"
-             placeholder="Code" maxlength="10">
-      <button data-projet="333" class="btn-projet px-4 py-2 rounded-lg text-sm font-bold
+      <label class="text-sm font-medium text-gray-300 mr-1">Van</label>
+      <button data-van="333" class="btn-van px-4 py-2 rounded-lg text-sm font-bold
               bg-gray-700 text-indigo-300 hover:bg-gray-600 hover:text-indigo-200
               focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all">
         333
       </button>
-      <button data-projet="883" class="btn-projet px-4 py-2 rounded-lg text-sm font-bold
+      <button data-van="883" class="btn-van px-4 py-2 rounded-lg text-sm font-bold
               bg-gray-700 text-indigo-300 hover:bg-gray-600 hover:text-indigo-200
               focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all">
         883
       </button>
-      <button data-projet="731" class="btn-projet px-4 py-2 rounded-lg text-sm font-bold
+      <button data-van="731" class="btn-van px-4 py-2 rounded-lg text-sm font-bold
               bg-gray-700 text-indigo-300 hover:bg-gray-600 hover:text-indigo-200
               focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all">
         731
@@ -119,29 +125,34 @@
                         focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition-all color-scheme-dark">
         </div>
       </div>
-      <!-- Projet dans le formulaire manuel -->
-      <div class="mb-4">
-        <label class="block text-xs font-medium text-gray-400 mb-1">Projet</label>
-        <div class="flex flex-wrap items-center gap-2">
-          <input type="text" id="inputProjet"
-                 class="projet-input w-24 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-100
+      <!-- Van + Argent dans le formulaire manuel -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-xs font-medium text-gray-400 mb-1">Van</label>
+          <div class="flex flex-wrap items-center gap-2">
+            <button data-van-form="333" class="btn-van-form btn-van px-3 py-2 rounded-lg text-xs font-bold
+                    bg-gray-700 text-indigo-300 hover:bg-gray-600 hover:text-indigo-200
+                    focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all">
+              333
+            </button>
+            <button data-van-form="883" class="btn-van-form btn-van px-3 py-2 rounded-lg text-xs font-bold
+                    bg-gray-700 text-indigo-300 hover:bg-gray-600 hover:text-indigo-200
+                    focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all">
+              883
+            </button>
+            <button data-van-form="731" class="btn-van-form btn-van px-3 py-2 rounded-lg text-xs font-bold
+                    bg-gray-700 text-indigo-300 hover:bg-gray-600 hover:text-indigo-200
+                    focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all">
+              731
+            </button>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-400 mb-1" for="inputArgent">Argent <span class="text-gray-500">(€)</span></label>
+          <input type="number" id="inputArgent" min="0" step="0.01"
+                 class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-100
                         focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition-all"
-                 placeholder="Code" maxlength="10">
-          <button data-projet="333" class="btn-projet-form btn-projet px-3 py-2 rounded-lg text-xs font-bold
-                  bg-gray-700 text-indigo-300 hover:bg-gray-600 hover:text-indigo-200
-                  focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all">
-            333
-          </button>
-          <button data-projet="883" class="btn-projet-form btn-projet px-3 py-2 rounded-lg text-xs font-bold
-                  bg-gray-700 text-indigo-300 hover:bg-gray-600 hover:text-indigo-200
-                  focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all">
-            883
-          </button>
-          <button data-projet="731" class="btn-projet-form btn-projet px-3 py-2 rounded-lg text-xs font-bold
-                  bg-gray-700 text-indigo-300 hover:bg-gray-600 hover:text-indigo-200
-                  focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all">
-            731
-          </button>
+                 placeholder="0.00">
         </div>
       </div>
       <div class="mb-4">
@@ -182,7 +193,8 @@
               <th class="px-3 py-3 text-left">Début</th>
               <th class="px-3 py-3 text-left">Fin</th>
               <th class="px-3 py-3 text-left">Durée</th>
-              <th class="px-3 py-3 text-left">Projet</th>
+              <th class="px-3 py-3 text-left">Van</th>
+              <th class="px-3 py-3 text-left">Argent</th>
               <th class="px-3 py-3 text-left w-full min-w-[140px]">Remarque</th>
               <th class="px-3 py-3 text-center no-print w-10">Suppr.</th>
             </tr>
@@ -237,7 +249,7 @@
       // ---- State ----
       const STORAGE_KEY = 'suivi_horaire_nadim';
       let sessions = [];
-      let selectedProjet = '';
+      let selectedVan = '';
 
       // ---- DOM refs ----
       const $ = id => document.getElementById(id);
@@ -256,11 +268,10 @@
       const inputDate = $('inputDate');
       const inputDebut = $('inputDebut');
       const inputFin = $('inputFin');
-      const inputProjet = $('inputProjet');
+      const inputArgent = $('inputArgent');
       const inputRemarque = $('inputRemarque');
       const btnValiderAjout = $('btnValiderAjout');
       const btnAnnulerAjout = $('btnAnnulerAjout');
-      const projetGlobal = $('projetGlobal');
 
       // ---- Helpers ----
       function pad2(n) { return String(n).padStart(2, '0'); }
@@ -303,7 +314,7 @@
       function computeDuration(startISO, endISO) {
         if (!startISO || !endISO) return { label: '-', totalMin: 0, totalSec: 0 };
         const diff = new Date(endISO) - new Date(startISO);
-        if (diff < 0) return { label: '⚠ Invalide', totalMin: 0, totalSec: 0 };
+        if (diff < 0) return { label: '\u26a0 Invalide', totalMin: 0, totalSec: 0 };
         const totalSec = Math.floor(diff / 1000);
         const h = Math.floor(totalSec / 3600);
         const m = Math.floor((totalSec % 3600) / 60);
@@ -312,24 +323,38 @@
         return { label: `${h}h ${pad2(m)}m ${pad2(s)}s`, totalMin, totalSec };
       }
 
-      // ---- Projet helpers ----
-      function highlightProjetBtn(value) {
-        // Global buttons
-        document.querySelectorAll('.btn-projet').forEach(btn => {
+      // ---- Van helpers ----
+      function highlightVanGlobalBtn(value) {
+        document.querySelectorAll('.btn-van').forEach(btn => {
           btn.classList.remove('selected', 'ring-2', 'ring-indigo-400');
         });
         if (value) {
-          document.querySelectorAll(`.btn-projet[data-projet="${value}"]`).forEach(btn => {
+          document.querySelectorAll(`.btn-van[data-van="${value}"]`).forEach(btn => {
             btn.classList.add('selected', 'ring-2', 'ring-indigo-400');
           });
         }
       }
 
-      function setProjet(value) {
-        selectedProjet = value;
-        projetGlobal.value = value;
-        if (inputProjet) inputProjet.value = value;
-        highlightProjetBtn(value);
+      function highlightVanFormBtn(value) {
+        document.querySelectorAll('.btn-van-form').forEach(btn => {
+          btn.classList.remove('selected', 'ring-2', 'ring-indigo-400');
+        });
+        if (value) {
+          document.querySelectorAll(`.btn-van-form[data-van-form="${value}"]`).forEach(btn => {
+            btn.classList.add('selected', 'ring-2', 'ring-indigo-400');
+          });
+        }
+      }
+
+      function setVan(value) {
+        // Toggle: if same value clicked, deselect
+        if (selectedVan === value) {
+          selectedVan = '';
+        } else {
+          selectedVan = value;
+        }
+        highlightVanGlobalBtn(selectedVan);
+        highlightVanFormBtn(selectedVan);
       }
 
       // ---- Load / Save ----
@@ -338,6 +363,14 @@
           const raw = localStorage.getItem(STORAGE_KEY);
           sessions = raw ? JSON.parse(raw) : [];
           if (!Array.isArray(sessions)) sessions = [];
+          // Migrate: if a session has projet but no van, migrate projet->van; drop projet
+          sessions.forEach(s => {
+            if (s.projet && !s.van) {
+              s.van = s.projet;
+            }
+            delete s.projet;
+            if (s.argent === undefined) s.argent = '';
+          });
         } catch (_) {
           sessions = [];
         }
@@ -353,7 +386,7 @@
       }
 
       function render() {
-        const rows = [...sessions].reverse(); // plus récent en haut
+        const rows = [...sessions].reverse(); // plus recent en haut
 
         if (rows.length === 0) {
           tableBody.innerHTML = '';
@@ -389,7 +422,7 @@
           totalContainer.classList.add('hidden');
         }
 
-        // Vérifier session active
+        // Verifier session active
         const active = hasActiveSession();
         btnDepart.disabled = active;
         btnFin.disabled = !active;
@@ -404,7 +437,7 @@
 
         // Build table HTML
         let html = '';
-        let idx = sessions.length; // index original (non-inversé)
+        let idx = sessions.length; // index original (non-inverse)
 
         for (let i = rows.length - 1; i >= 0; i--) {
           const s = rows[i];
@@ -412,9 +445,10 @@
 
           const dateLabel = formatDate(s.start);
           const debut = s.start ? formatTimeFull(s.start) : '-';
-          const fin   = s.end   ? formatTimeFull(s.end)   : '—';
-          const dur   = s.start && s.end ? computeDuration(s.start, s.end).label : '—';
-          const projet = s.projet || '';
+          const fin   = s.end   ? formatTimeFull(s.end)   : '\u2014';
+          const dur   = s.start && s.end ? computeDuration(s.start, s.end).label : '\u2014';
+          const van   = s.van || '';
+          const argent = s.argent !== undefined && s.argent !== '' ? s.argent : '';
           const remarque = s.remark || '';
 
           const isActive = s.start && !s.end;
@@ -424,17 +458,27 @@
           html += `<td class="px-3 py-3 whitespace-nowrap font-mono text-xs ${isActive ? 'text-blue-300' : 'text-gray-400'}">${debut}</td>`;
           html += `<td class="px-3 py-3 whitespace-nowrap font-mono text-xs ${isActive ? 'text-gray-500 italic' : 'text-gray-400'}">${fin}</td>`;
           html += `<td class="px-3 py-3 whitespace-nowrap font-mono text-xs font-medium ${dur.includes('Invalide') ? 'text-amber-400' : 'text-gray-200'}">${dur}</td>`;
-          // Projet column
-          html += `<td class="px-3 py-3">`;
-          html += `<input type="text" data-idx="${idx}" class="projet-input-inline w-full px-2 py-1.5 bg-gray-700/50 border border-gray-600 rounded-lg text-xs text-gray-200
-                    focus:bg-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition-all font-mono"
-                    placeholder="—" value="${projet}" maxlength="10">`;
+          // Van column - 3 small buttons
+          html += `<td class="px-3 py-3 whitespace-nowrap">`;
+          html += `<div class="flex gap-1 items-center justify-center">`;
+          ['333','883','731'].forEach(v => {
+            const sel = van === v ? 'selected bg-indigo-800/40 text-indigo-200 border-indigo-500' : 'bg-gray-700/60 text-gray-400 border-gray-600 hover:bg-gray-600 hover:text-gray-200';
+            html += `<button class="btn-van-row ${sel}" data-van="${v}" data-van-idx="${idx}">${v}</button>`;
+          });
+          html += `</div></td>`;
+          // Argent column - number input
+          html += `<td class="px-3 py-3 whitespace-nowrap">`;
+          html += `<input type="number" data-argent-idx="${idx}" min="0" step="0.01" value="${argent}"
+                    class="w-20 px-2 py-1.5 bg-gray-700/50 border border-gray-600 rounded-lg text-xs text-gray-200
+                           focus:bg-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition-all"
+                    placeholder="€">`;
           html += `</td>`;
+          // Remarque column
           html += `<td class="px-3 py-3">`;
-          html += `<textarea data-idx="${idx}" class="remark-textarea w-full px-2 py-1.5 border border-gray-600 rounded-lg bg-gray-700/50 focus:bg-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition-all text-gray-200" rows="1" placeholder="Remarque…">${remarque}</textarea>`;
+          html += `<textarea data-idx="${idx}" class="remark-textarea w-full px-2 py-1.5 border border-gray-600 rounded-lg bg-gray-700/50 focus:bg-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition-all text-gray-200" rows="1" placeholder="Remarque\u2026">${remarque}</textarea>`;
           html += `</td>`;
           html += `<td class="px-3 py-3 text-center no-print">`;
-          html += `<button data-idx="${idx}" class="btn-delete px-2 py-1 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-900/30 transition-colors text-lg" title="Supprimer">✕</button>`;
+          html += `<button data-idx="${idx}" class="btn-delete px-2 py-1 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-900/30 transition-colors text-lg" title="Supprimer">\u2715</button>`;
           html += `</td>`;
           html += `</tr>`;
         }
@@ -454,18 +498,33 @@
           });
         });
 
-        // Projet input inline — auto-save
-        tableBody.querySelectorAll('.projet-input-inline').forEach(inp => {
+        // Van buttons (row-level)
+        tableBody.querySelectorAll('.btn-van-row').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const idx = parseInt(this.dataset.vanIdx, 10);
+            const vanVal = this.dataset.van;
+            // Toggle: if same value already selected, clear
+            if (sessions[idx].van === vanVal) {
+              sessions[idx].van = '';
+            } else {
+              sessions[idx].van = vanVal;
+            }
+            save();
+            render();
+          });
+        });
+
+        // Argent input - auto-save
+        tableBody.querySelectorAll('[data-argent-idx]').forEach(inp => {
           inp.addEventListener('input', function() {
-            const idx = parseInt(this.dataset.idx, 10);
-            sessions[idx].projet = this.value;
+            const idx = parseInt(this.dataset.argentIdx, 10);
+            sessions[idx].argent = this.value;
             save();
           });
         });
 
-        // Remarque textarea — auto-save + auto-resize
+        // Remarque textarea - auto-save + auto-resize
         tableBody.querySelectorAll('.remark-textarea').forEach(ta => {
-          // Auto-resize
           const autoResize = () => {
             ta.style.height = 'auto';
             ta.style.height = Math.max(ta.scrollHeight, 40) + 'px';
@@ -476,7 +535,6 @@
             save();
             autoResize();
           });
-          // Init resize
           autoResize();
         });
       }
@@ -484,13 +542,14 @@
       // ---- Actions ----
       function doDepart() {
         if (hasActiveSession()) {
-          alert('Une session est déjà en cours. Terminez-la avant d\'en commencer une nouvelle.');
+          alert('Une session est deja en cours. Terminez-la avant d\'en commencer une nouvelle.');
           return;
         }
         sessions.push({
           start: nowISO(),
           end: null,
-          projet: selectedProjet,
+          van: selectedVan,
+          argent: '',
           remark: ''
         });
         save();
@@ -500,7 +559,7 @@
       function doFin() {
         const activeIdx = sessions.findIndex(s => s.start && !s.end);
         if (activeIdx === -1) {
-          alert('Aucune session active. Cliquez sur "Départ" pour commencer.');
+          alert('Aucune session active. Cliquez sur "Depart" pour commencer.');
           return;
         }
         sessions[activeIdx].end = nowISO();
@@ -510,13 +569,14 @@
 
       function doExportCSV() {
         if (sessions.length === 0) {
-          alert('Aucune donnée à exporter.');
+          alert('Aucune donnee a exporter.');
           return;
         }
 
         const BOM = '\uFEFF';
-        const header = 'Date;Début;Fin;Durée (heures);Durée (minutes);Projet;Remarque\n';
+        const header = 'Date;Debut;Fin;Duree (heures);Duree (minutes);Van;Argent (EUR);Remarque\n';
         let totalMin = 0;
+        let totalArgent = 0;
 
         const lines = sessions.map(s => {
           const date = formatDate(s.start);
@@ -524,16 +584,20 @@
           const fin   = s.end   ? formatTime(s.end)   : '';
           const dur   = computeDuration(s.start, s.end);
           if (s.start && s.end) totalMin += dur.totalMin;
-          const projet = (s.projet || '').replace(/"/g, '""');
+          const van = (s.van || '').replace(/"/g, '""');
+          const argent = (s.argent || '');
+          const montant = parseFloat(argent);
+          if (!isNaN(montant)) totalArgent += montant;
           const remarque = (s.remark || '').replace(/"/g, '""');
-          const heuresDecimales = dur.totalMin > 0 ? (dur.totalMin / 60).toFixed(2) : '';
-          const minutesTotal = dur.totalMin > 0 ? dur.totalMin : '';
-          return `${date};${debut};${fin};${heuresDecimales};${minutesTotal};"${projet}";"${remarque}"`;
+          const heuresDecimales = dur.totalMin > 0 ? (dur.totalMin / 60).toFixed(2).replace('.', ',') : '';
+          const minutesTotales = dur.totalMin > 0 ? dur.totalMin : '';
+          return `${date};${debut};${fin};${heuresDecimales};${minutesTotales};${van};${argent};"${remarque}"`;
         }).join('\n');
 
         const totalH = Math.floor(totalMin / 60);
         const totalM = totalMin % 60;
-        const footer = `\nTOTAL;;;${(totalMin/60).toFixed(2)};${totalMin};;${totalH}h ${pad2(totalM)}min`;
+        const totalArgentStr = totalArgent.toFixed(2).replace('.', ',');
+        const footer = `\nTOTAL;;;;;${totalH}h ${pad2(totalM)}min;;${totalArgentStr} EUR`;
 
         const csv = BOM + header + lines + footer;
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -550,8 +614,8 @@
 
       function doEffacerTout() {
         if (sessions.length === 0) return;
-        if (!confirm('⚠ Êtes-vous sûr de vouloir effacer TOUTES les données ? Cette action est irréversible.')) return;
-        if (!confirm('Confirmation finale : supprimer définitivement toutes les sessions ?')) return;
+        if (!confirm('\u26a0 Etes-vous sur de vouloir effacer TOUTES les donnees ? Cette action est irreversible.')) return;
+        if (!confirm('Confirmation finale : supprimer definitivement toutes les sessions ?')) return;
         sessions = [];
         save();
         render();
@@ -570,34 +634,19 @@
         }
       });
 
-      // ---- Projet quick buttons (global) ----
-      document.querySelectorAll('.btn-projet').forEach(btn => {
+      // ---- Van quick buttons (global) ----
+      document.querySelectorAll('.btn-van').forEach(btn => {
         btn.addEventListener('click', function() {
-          setProjet(this.dataset.projet);
+          setVan(this.dataset.van);
         });
       });
 
-      // Projet global input — sync
-      projetGlobal.addEventListener('input', function() {
-        selectedProjet = this.value;
-        if (inputProjet) inputProjet.value = this.value;
-        highlightProjetBtn(this.value);
-      });
-
-      // ---- Projet quick buttons (form) ----
-      document.querySelectorAll('.btn-projet-form').forEach(btn => {
+      // ---- Van quick buttons (form) ----
+      document.querySelectorAll('.btn-van-form').forEach(btn => {
         btn.addEventListener('click', function() {
-          setProjet(this.dataset.projet);
+          setVan(this.dataset.vanForm);
         });
       });
-
-      if (inputProjet) {
-        inputProjet.addEventListener('input', function() {
-          selectedProjet = this.value;
-          projetGlobal.value = this.value;
-          highlightProjetBtn(this.value);
-        });
-      }
 
       // ---- Ajout manuel ----
       function todayStr() {
@@ -611,7 +660,8 @@
         inputDate.value = todayStr();
         inputDebut.value = '';
         inputFin.value = '';
-        if (inputProjet) inputProjet.value = selectedProjet;
+        inputArgent.value = '';
+        highlightVanFormBtn(selectedVan);
         inputRemarque.value = '';
       }
 
@@ -629,39 +679,39 @@
         const dateVal = inputDate.value.trim();
         const debutVal = inputDebut.value.trim();
         const finVal = inputFin.value.trim();
-        const projetVal = inputProjet ? inputProjet.value.trim() : selectedProjet;
+        const vanVal = selectedVan;
+        const argentVal = inputArgent.value.trim();
         const remarqueVal = inputRemarque.value.trim();
 
         if (!dateVal || !debutVal || !finVal) {
-          alert('Veuillez remplir la date, le début et la fin.');
+          alert('Veuillez remplir la date, le debut et la fin.');
           return;
         }
 
         if (hasActiveSession()) {
-          alert('Une session est déjà en cours. Terminez-la d\'abord ou supprimez-la avant d\'ajouter une entrée manuelle.');
+          alert('Une session est deja en cours. Terminez-la d\'abord ou supprimez-la avant d\'ajouter une entree manuelle.');
           return;
         }
-
-        // Construire des ISO à partir de la date et des heures
+        // Construire des ISO a partir de la date et des heures
         const startISO = dateVal + 'T' + debutVal + ':00';
         const endISO   = dateVal + 'T' + finVal   + ':00';
 
-        // Vérifier que début < fin
+        // Verifier que debut < fin
         if (new Date(endISO) <= new Date(startISO)) {
-          alert('L\'heure de fin doit être après l\'heure de début.');
+          alert('L\'heure de fin doit etre apres l\'heure de debut.');
           return;
         }
 
         sessions.push({
           start: startISO,
           end: endISO,
-          projet: projetVal,
+          van: vanVal,
+          argent: argentVal,
           remark: remarqueVal
         });
         save();
         hideFormAjout();
-        // Sync le projet global avec celui saisi
-        if (projetVal) setProjet(projetVal);
+        if (vanVal) setVan(vanVal);
         render();
       }
 
@@ -679,8 +729,8 @@
         hideFormAjout();
       });
 
-      // Appui sur Enter dans un des champs → valider
-      [inputDate, inputDebut, inputFin, inputProjet, inputRemarque].forEach(el => {
+      // Appui sur Enter dans un des champs -> valider
+      [inputDate, inputDebut, inputFin, inputArgent, inputRemarque].forEach(el => {
         if (!el) return;
         el.addEventListener('keydown', function(e) {
           if (e.key === 'Enter' && !e.shiftKey) {
@@ -697,7 +747,7 @@
       btnEffacerTout.addEventListener('click', doEffacerTout);
 
       // --- Expose to window for debug ---
-      window.__suivi = { sessions, selectedProjet, load, save, render, doDepart, doFin };
+      window.__suivi = { sessions, selectedVan, load, save, render, doDepart, doFin };
 
     })();
   </script>
