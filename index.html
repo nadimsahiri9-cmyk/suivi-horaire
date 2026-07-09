@@ -16,110 +16,183 @@
     .fade-in { animation: fadeIn 0.25s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
     .total-badge { background: linear-gradient(135deg, #1e3a5f, #2563eb); }
+    .btn-projet {
+      transition: all 0.15s ease;
+      font-weight: 600;
+    }
+    .btn-projet:active { transform: scale(0.94); }
+    .btn-projet.selected {
+      box-shadow: 0 0 0 2px #6366f1, 0 0 0 4px rgba(99,102,241,0.3);
+    }
+    .projet-input {
+      font-family: monospace;
+      letter-spacing: 0.05em;
+    }
+    /* dark scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #1f2937; }
+    ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+<body class="bg-gray-950 text-gray-100 font-sans antialiased">
 
   <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
 
     <!-- Header -->
     <header class="text-center mb-8">
-      <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-100 tracking-tight">
         ⏱ Suivi Horaire — Nadim
       </h1>
-      <p class="text-gray-500 mt-1 text-sm">Cliquez sur <strong>Départ</strong> pour débuter, puis <strong>Fin</strong> pour terminer.</p>
+      <p class="text-gray-400 mt-1 text-sm">Cliquez sur <strong>Départ</strong> pour débuter, puis <strong>Fin</strong> pour terminer.</p>
     </header>
 
     <!-- Actions -->
-    <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8 no-print">
+    <div class="flex flex-col sm:flex-row gap-4 justify-center mb-4 no-print">
       <button id="btnDepart"
               class="btn-depart flex-1 sm:flex-none sm:min-w-[200px] px-8 py-5 rounded-2xl text-white font-bold text-xl shadow-lg
-                     bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700
-                     focus:outline-none focus:ring-4 focus:ring-emerald-300
+                     bg-emerald-700 hover:bg-emerald-600 active:bg-emerald-800
+                     focus:outline-none focus:ring-4 focus:ring-emerald-500/40
                      disabled:opacity-40 disabled:cursor-not-allowed">
         🟢 Départ
       </button>
       <button id="btnFin"
               class="btn-fin flex-1 sm:flex-none sm:min-w-[200px] px-8 py-5 rounded-2xl text-white font-bold text-xl shadow-lg
-                     bg-red-600 hover:bg-red-500 active:bg-red-700
-                     focus:outline-none focus:ring-4 focus:ring-red-300
+                     bg-red-700 hover:bg-red-600 active:bg-red-800
+                     focus:outline-none focus:ring-4 focus:ring-red-500/40
                      disabled:opacity-40 disabled:cursor-not-allowed">
         🔴 Fin
       </button>
       <button id="btnAjoutManuel"
               class="flex-1 sm:flex-none sm:min-w-[200px] px-6 py-4 rounded-2xl text-white font-semibold text-base shadow-lg
-                     bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700
-                     focus:outline-none focus:ring-4 focus:ring-indigo-300
+                     bg-indigo-700 hover:bg-indigo-600 active:bg-indigo-800
+                     focus:outline-none focus:ring-4 focus:ring-indigo-500/40
                      transition-all duration-150 active:scale-96">
         ➕ Ajouter manuellement
       </button>
     </div>
 
+    <!-- Projet selector + quick buttons (global) -->
+    <div class="flex flex-wrap items-center gap-2 justify-center mb-6 no-print">
+      <label class="text-sm font-medium text-gray-300 mr-1" for="projetGlobal">Projet</label>
+      <input type="text" id="projetGlobal"
+             class="projet-input w-24 px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-gray-100
+                    focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition-all"
+             placeholder="Code" maxlength="10">
+      <button data-projet="333" class="btn-projet px-4 py-2 rounded-lg text-sm font-bold
+              bg-gray-700 text-indigo-300 hover:bg-gray-600 hover:text-indigo-200
+              focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all">
+        333
+      </button>
+      <button data-projet="883" class="btn-projet px-4 py-2 rounded-lg text-sm font-bold
+              bg-gray-700 text-indigo-300 hover:bg-gray-600 hover:text-indigo-200
+              focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all">
+        883
+      </button>
+      <button data-projet="731" class="btn-projet px-4 py-2 rounded-lg text-sm font-bold
+              bg-gray-700 text-indigo-300 hover:bg-gray-600 hover:text-indigo-200
+              focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all">
+        731
+      </button>
+    </div>
+
     <!-- Formulaire ajout manuel -->
-    <div id="formAjoutManuel" class="hidden max-w-xl mx-auto mb-8 p-5 bg-white border border-indigo-200 rounded-2xl shadow-sm fade-in no-print">
-      <h3 class="text-base font-bold text-gray-800 mb-4">📝 Ajouter une entrée manuelle</h3>
+    <div id="formAjoutManuel" class="hidden max-w-xl mx-auto mb-8 p-5 bg-gray-800 border border-indigo-700/60 rounded-2xl shadow-sm fade-in no-print">
+      <h3 class="text-base font-bold text-gray-100 mb-4">📝 Ajouter une entrée manuelle</h3>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
         <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1" for="inputDate">Date</label>
+          <label class="block text-xs font-medium text-gray-400 mb-1" for="inputDate">Date</label>
           <input type="date" id="inputDate"
-                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                 class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-100
+                        focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition-all color-scheme-dark">
         </div>
         <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1" for="inputDebut">Début</label>
+          <label class="block text-xs font-medium text-gray-400 mb-1" for="inputDebut">Début</label>
           <input type="time" id="inputDebut"
-                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                 class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-100
+                        focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition-all color-scheme-dark">
         </div>
         <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1" for="inputFin">Fin</label>
+          <label class="block text-xs font-medium text-gray-400 mb-1" for="inputFin">Fin</label>
           <input type="time" id="inputFin"
-                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                 class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-100
+                        focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition-all color-scheme-dark">
+        </div>
+      </div>
+      <!-- Projet dans le formulaire manuel -->
+      <div class="mb-4">
+        <label class="block text-xs font-medium text-gray-400 mb-1">Projet</label>
+        <div class="flex flex-wrap items-center gap-2">
+          <input type="text" id="inputProjet"
+                 class="projet-input w-24 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-100
+                        focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition-all"
+                 placeholder="Code" maxlength="10">
+          <button data-projet="333" class="btn-projet-form btn-projet px-3 py-2 rounded-lg text-xs font-bold
+                  bg-gray-700 text-indigo-300 hover:bg-gray-600 hover:text-indigo-200
+                  focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all">
+            333
+          </button>
+          <button data-projet="883" class="btn-projet-form btn-projet px-3 py-2 rounded-lg text-xs font-bold
+                  bg-gray-700 text-indigo-300 hover:bg-gray-600 hover:text-indigo-200
+                  focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all">
+            883
+          </button>
+          <button data-projet="731" class="btn-projet-form btn-projet px-3 py-2 rounded-lg text-xs font-bold
+                  bg-gray-700 text-indigo-300 hover:bg-gray-600 hover:text-indigo-200
+                  focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all">
+            731
+          </button>
         </div>
       </div>
       <div class="mb-4">
-        <label class="block text-xs font-medium text-gray-500 mb-1" for="inputRemarque">Remarque <span class="text-gray-400">(optionnelle)</span></label>
+        <label class="block text-xs font-medium text-gray-400 mb-1" for="inputRemarque">Remarque <span class="text-gray-500">(optionnelle)</span></label>
         <textarea id="inputRemarque" rows="2"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-vertical focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                  class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-100 resize-vertical
+                         focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition-all"
                   placeholder="Remarque…"></textarea>
       </div>
       <div class="flex gap-3 justify-end">
         <button id="btnAnnulerAjout"
-                class="px-5 py-2 rounded-xl bg-white border border-gray-300 text-gray-700 font-medium text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors">
+                class="px-5 py-2 rounded-xl bg-gray-700 border border-gray-600 text-gray-200 font-medium text-sm
+                       hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors">
           Annuler
         </button>
         <button id="btnValiderAjout"
-                class="px-5 py-2 rounded-xl bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-300 shadow-sm transition-colors">
+                class="px-5 py-2 rounded-xl bg-indigo-600 text-white font-medium text-sm
+                       hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm transition-colors">
           ✅ Valider
         </button>
       </div>
     </div>
 
     <!-- Indicateur session en cours -->
-    <div id="sessionIndicator" class="hidden text-center mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl fade-in">
-      <p class="text-blue-800 font-semibold text-sm sm:text-base">
-        ⏳ Session en cours — Début : <span id="sessionStartDisplay" class="font-mono text-blue-900"></span>
+    <div id="sessionIndicator" class="hidden text-center mb-6 p-4 bg-blue-900/40 border border-blue-700/50 rounded-xl fade-in">
+      <p class="text-blue-200 font-semibold text-sm sm:text-base">
+        ⏳ Session en cours — Début : <span id="sessionStartDisplay" class="font-mono text-blue-100"></span>
       </p>
     </div>
 
     <!-- Tableau -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-gray-800 rounded-2xl shadow-sm border border-gray-700 overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
-          <thead class="bg-gray-100 text-gray-600 uppercase text-xs tracking-wider">
+          <thead class="bg-gray-700 text-gray-300 uppercase text-xs tracking-wider">
             <tr>
               <th class="px-3 py-3 text-left">Date</th>
               <th class="px-3 py-3 text-left">Début</th>
               <th class="px-3 py-3 text-left">Fin</th>
               <th class="px-3 py-3 text-left">Durée</th>
+              <th class="px-3 py-3 text-left">Projet</th>
               <th class="px-3 py-3 text-left w-full min-w-[140px]">Remarque</th>
               <th class="px-3 py-3 text-center no-print w-10">Suppr.</th>
             </tr>
           </thead>
-          <tbody id="tableBody" class="divide-y divide-gray-100"></tbody>
+          <tbody id="tableBody" class="divide-y divide-gray-700"></tbody>
         </table>
       </div>
 
       <!-- Empty state -->
-      <div id="emptyState" class="text-center py-12 text-gray-400">
+      <div id="emptyState" class="text-center py-12 text-gray-500">
         <p class="text-4xl mb-2">📋</p>
         <p class="text-sm">Aucune session enregistrée. Cliquez sur <strong>Départ</strong> pour commencer.</p>
       </div>
@@ -130,21 +203,21 @@
       <div id="totalContainer" class="hidden">
         <span class="total-badge inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white text-sm font-semibold shadow">
           <span>📊 Total</span>
-          <span id="totalHeures" class="font-mono">0h 00min</span>
+          <span id="totalHeures" class="font-mono">0h 00m 00s</span>
         </span>
-        <span class="text-gray-400 text-xs ml-2">(sessions)</span>
+        <span class="text-gray-500 text-xs ml-2">(sessions)</span>
       </div>
 
       <div class="flex gap-3">
         <button id="btnExportCSV"
-                class="px-5 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 font-medium text-sm
-                       hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300
+                class="px-5 py-2.5 rounded-xl bg-gray-800 border border-gray-600 text-gray-200 font-medium text-sm
+                       hover:bg-gray-700 hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500
                        shadow-sm transition-colors">
           ⬇ Exporter CSV
         </button>
         <button id="btnEffacerTout"
-                class="px-5 py-2.5 rounded-xl bg-white border border-red-200 text-red-600 font-medium text-sm
-                       hover:bg-red-50 hover:border-red-300 focus:outline-none focus:ring-2 focus:ring-red-200
+                class="px-5 py-2.5 rounded-xl bg-gray-800 border border-red-700/60 text-red-400 font-medium text-sm
+                       hover:bg-red-900/30 hover:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-500/40
                        shadow-sm transition-colors">
           🗑 Effacer tout
         </button>
@@ -152,7 +225,7 @@
     </div>
 
     <!-- Footer signature -->
-    <p class="text-center text-xs text-gray-400 mt-10 border-t border-gray-100 pt-4">
+    <p class="text-center text-xs text-gray-600 mt-10 border-t border-gray-800 pt-4">
       Suivi Horaire — Nadim &nbsp;·&nbsp; Données stockées localement
     </p>
   </div>
@@ -164,6 +237,7 @@
       // ---- State ----
       const STORAGE_KEY = 'suivi_horaire_nadim';
       let sessions = [];
+      let selectedProjet = '';
 
       // ---- DOM refs ----
       const $ = id => document.getElementById(id);
@@ -182,9 +256,11 @@
       const inputDate = $('inputDate');
       const inputDebut = $('inputDebut');
       const inputFin = $('inputFin');
+      const inputProjet = $('inputProjet');
       const inputRemarque = $('inputRemarque');
       const btnValiderAjout = $('btnValiderAjout');
       const btnAnnulerAjout = $('btnAnnulerAjout');
+      const projetGlobal = $('projetGlobal');
 
       // ---- Helpers ----
       function pad2(n) { return String(n).padStart(2, '0'); }
@@ -225,13 +301,35 @@
       }
 
       function computeDuration(startISO, endISO) {
-        if (!startISO || !endISO) return { label: '-', totalMin: 0 };
+        if (!startISO || !endISO) return { label: '-', totalMin: 0, totalSec: 0 };
         const diff = new Date(endISO) - new Date(startISO);
-        if (diff < 0) return { label: '⚠ Invalide', totalMin: 0 };
-        const totalMin = Math.round(diff / 60000);
-        const h = Math.floor(totalMin / 60);
-        const m = totalMin % 60;
-        return { label: `${h}h ${pad2(m)}min`, totalMin };
+        if (diff < 0) return { label: '⚠ Invalide', totalMin: 0, totalSec: 0 };
+        const totalSec = Math.floor(diff / 1000);
+        const h = Math.floor(totalSec / 3600);
+        const m = Math.floor((totalSec % 3600) / 60);
+        const s = totalSec % 60;
+        const totalMin = Math.round(totalSec / 60);
+        return { label: `${h}h ${pad2(m)}m ${pad2(s)}s`, totalMin, totalSec };
+      }
+
+      // ---- Projet helpers ----
+      function highlightProjetBtn(value) {
+        // Global buttons
+        document.querySelectorAll('.btn-projet').forEach(btn => {
+          btn.classList.remove('selected', 'ring-2', 'ring-indigo-400');
+        });
+        if (value) {
+          document.querySelectorAll(`.btn-projet[data-projet="${value}"]`).forEach(btn => {
+            btn.classList.add('selected', 'ring-2', 'ring-indigo-400');
+          });
+        }
+      }
+
+      function setProjet(value) {
+        selectedProjet = value;
+        projetGlobal.value = value;
+        if (inputProjet) inputProjet.value = value;
+        highlightProjetBtn(value);
       }
 
       // ---- Load / Save ----
@@ -282,9 +380,11 @@
 
         if (sessionCount > 0) {
           totalContainer.classList.remove('hidden');
-          const h = Math.floor(totalMin / 60);
-          const m = totalMin % 60;
-          totalHeures.textContent = `${h}h ${pad2(m)}min`;
+          const tSec = totalMin * 60;
+          const h = Math.floor(tSec / 3600);
+          const m = Math.floor((tSec % 3600) / 60);
+          const s = tSec % 60;
+          totalHeures.textContent = `${h}h ${pad2(m)}m ${pad2(s)}s`;
         } else {
           totalContainer.classList.add('hidden');
         }
@@ -314,20 +414,27 @@
           const debut = s.start ? formatTimeFull(s.start) : '-';
           const fin   = s.end   ? formatTimeFull(s.end)   : '—';
           const dur   = s.start && s.end ? computeDuration(s.start, s.end).label : '—';
+          const projet = s.projet || '';
           const remarque = s.remark || '';
 
           const isActive = s.start && !s.end;
 
-          html += `<tr class="hover:bg-gray-50 transition-colors fade-in ${isActive ? 'bg-blue-50/50' : ''}" data-idx="${idx}">`;
-          html += `<td class="px-3 py-3 whitespace-nowrap font-medium text-gray-700">${dateLabel}</td>`;
-          html += `<td class="px-3 py-3 whitespace-nowrap font-mono text-xs ${isActive ? 'text-blue-700' : 'text-gray-600'}">${debut}</td>`;
-          html += `<td class="px-3 py-3 whitespace-nowrap font-mono text-xs ${isActive ? 'text-gray-400 italic' : 'text-gray-600'}">${fin}</td>`;
-          html += `<td class="px-3 py-3 whitespace-nowrap font-mono text-xs font-medium ${dur.includes('Invalide') ? 'text-amber-600' : 'text-gray-700'}">${dur}</td>`;
+          html += `<tr class="hover:bg-gray-700/50 transition-colors fade-in ${isActive ? 'bg-blue-900/20' : ''}" data-idx="${idx}">`;
+          html += `<td class="px-3 py-3 whitespace-nowrap font-medium text-gray-200">${dateLabel}</td>`;
+          html += `<td class="px-3 py-3 whitespace-nowrap font-mono text-xs ${isActive ? 'text-blue-300' : 'text-gray-400'}">${debut}</td>`;
+          html += `<td class="px-3 py-3 whitespace-nowrap font-mono text-xs ${isActive ? 'text-gray-500 italic' : 'text-gray-400'}">${fin}</td>`;
+          html += `<td class="px-3 py-3 whitespace-nowrap font-mono text-xs font-medium ${dur.includes('Invalide') ? 'text-amber-400' : 'text-gray-200'}">${dur}</td>`;
+          // Projet column
           html += `<td class="px-3 py-3">`;
-          html += `<textarea data-idx="${idx}" class="remark-textarea w-full px-2 py-1.5 border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-gray-700" rows="1" placeholder="Remarque…">${remarque}</textarea>`;
+          html += `<input type="text" data-idx="${idx}" class="projet-input-inline w-full px-2 py-1.5 bg-gray-700/50 border border-gray-600 rounded-lg text-xs text-gray-200
+                    focus:bg-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition-all font-mono"
+                    placeholder="—" value="${projet}" maxlength="10">`;
+          html += `</td>`;
+          html += `<td class="px-3 py-3">`;
+          html += `<textarea data-idx="${idx}" class="remark-textarea w-full px-2 py-1.5 border border-gray-600 rounded-lg bg-gray-700/50 focus:bg-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition-all text-gray-200" rows="1" placeholder="Remarque…">${remarque}</textarea>`;
           html += `</td>`;
           html += `<td class="px-3 py-3 text-center no-print">`;
-          html += `<button data-idx="${idx}" class="btn-delete px-2 py-1 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors text-lg" title="Supprimer">✕</button>`;
+          html += `<button data-idx="${idx}" class="btn-delete px-2 py-1 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-900/30 transition-colors text-lg" title="Supprimer">✕</button>`;
           html += `</td>`;
           html += `</tr>`;
         }
@@ -344,6 +451,15 @@
               save();
               render();
             }
+          });
+        });
+
+        // Projet input inline — auto-save
+        tableBody.querySelectorAll('.projet-input-inline').forEach(inp => {
+          inp.addEventListener('input', function() {
+            const idx = parseInt(this.dataset.idx, 10);
+            sessions[idx].projet = this.value;
+            save();
           });
         });
 
@@ -374,6 +490,7 @@
         sessions.push({
           start: nowISO(),
           end: null,
+          projet: selectedProjet,
           remark: ''
         });
         save();
@@ -398,7 +515,7 @@
         }
 
         const BOM = '\uFEFF';
-        const header = 'Date;Début;Fin;Durée (heures);Durée (minutes);Remarque\n';
+        const header = 'Date;Début;Fin;Durée (heures);Durée (minutes);Projet;Remarque\n';
         let totalMin = 0;
 
         const lines = sessions.map(s => {
@@ -407,16 +524,16 @@
           const fin   = s.end   ? formatTime(s.end)   : '';
           const dur   = computeDuration(s.start, s.end);
           if (s.start && s.end) totalMin += dur.totalMin;
+          const projet = (s.projet || '').replace(/"/g, '""');
           const remarque = (s.remark || '').replace(/"/g, '""');
-          // Durée en heures décimales, durée en minutes total
           const heuresDecimales = dur.totalMin > 0 ? (dur.totalMin / 60).toFixed(2) : '';
           const minutesTotal = dur.totalMin > 0 ? dur.totalMin : '';
-          return `${date};${debut};${fin};${heuresDecimales};${minutesTotal};"${remarque}"`;
+          return `${date};${debut};${fin};${heuresDecimales};${minutesTotal};"${projet}";"${remarque}"`;
         }).join('\n');
 
         const totalH = Math.floor(totalMin / 60);
         const totalM = totalMin % 60;
-        const footer = `\nTOTAL;;;${(totalMin/60).toFixed(2)};${totalMin};${totalH}h ${pad2(totalM)}min`;
+        const footer = `\nTOTAL;;;${(totalMin/60).toFixed(2)};${totalMin};;${totalH}h ${pad2(totalM)}min`;
 
         const csv = BOM + header + lines + footer;
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -446,13 +563,41 @@
 
       // ---- Keyboard shortcuts ----
       document.addEventListener('keydown', function(e) {
-        // Ctrl+Enter → Départ, Shift+Enter → Fin (quand pas dans un textarea)
         if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
         if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
           e.preventDefault();
           if (!btnDepart.disabled) doDepart();
         }
       });
+
+      // ---- Projet quick buttons (global) ----
+      document.querySelectorAll('.btn-projet').forEach(btn => {
+        btn.addEventListener('click', function() {
+          setProjet(this.dataset.projet);
+        });
+      });
+
+      // Projet global input — sync
+      projetGlobal.addEventListener('input', function() {
+        selectedProjet = this.value;
+        if (inputProjet) inputProjet.value = this.value;
+        highlightProjetBtn(this.value);
+      });
+
+      // ---- Projet quick buttons (form) ----
+      document.querySelectorAll('.btn-projet-form').forEach(btn => {
+        btn.addEventListener('click', function() {
+          setProjet(this.dataset.projet);
+        });
+      });
+
+      if (inputProjet) {
+        inputProjet.addEventListener('input', function() {
+          selectedProjet = this.value;
+          projetGlobal.value = this.value;
+          highlightProjetBtn(this.value);
+        });
+      }
 
       // ---- Ajout manuel ----
       function todayStr() {
@@ -466,6 +611,7 @@
         inputDate.value = todayStr();
         inputDebut.value = '';
         inputFin.value = '';
+        if (inputProjet) inputProjet.value = selectedProjet;
         inputRemarque.value = '';
       }
 
@@ -483,6 +629,7 @@
         const dateVal = inputDate.value.trim();
         const debutVal = inputDebut.value.trim();
         const finVal = inputFin.value.trim();
+        const projetVal = inputProjet ? inputProjet.value.trim() : selectedProjet;
         const remarqueVal = inputRemarque.value.trim();
 
         if (!dateVal || !debutVal || !finVal) {
@@ -508,10 +655,13 @@
         sessions.push({
           start: startISO,
           end: endISO,
+          projet: projetVal,
           remark: remarqueVal
         });
         save();
         hideFormAjout();
+        // Sync le projet global avec celui saisi
+        if (projetVal) setProjet(projetVal);
         render();
       }
 
@@ -519,7 +669,6 @@
         if (formAjoutManuel.classList.contains('hidden')) {
           showFormAjout();
         } else {
-          // Si déjà ouvert, on le referme
           hideFormAjout();
         }
       });
@@ -531,7 +680,8 @@
       });
 
       // Appui sur Enter dans un des champs → valider
-      [inputDate, inputDebut, inputFin, inputRemarque].forEach(el => {
+      [inputDate, inputDebut, inputFin, inputProjet, inputRemarque].forEach(el => {
+        if (!el) return;
         el.addEventListener('keydown', function(e) {
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -547,7 +697,7 @@
       btnEffacerTout.addEventListener('click', doEffacerTout);
 
       // --- Expose to window for debug ---
-      window.__suivi = { sessions, load, save, render, doDepart, doFin };
+      window.__suivi = { sessions, selectedProjet, load, save, render, doDepart, doFin };
 
     })();
   </script>
