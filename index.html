@@ -405,7 +405,7 @@
       }
 
       function render() {
-        const rows = [...sessions]; // plus ancien en haut
+        const rows = [...sessions].sort((a, b) => new Date(a.start) - new Date(b.start)); // trié par date croissante
 
         if (rows.length === 0) {
           tableBody.innerHTML = '';
@@ -459,8 +459,8 @@
 
         for (let i = 0; i < rows.length; i++) {
           const s = rows[i];
-          // rows is newest-first, so original index in sessions array:
-          const idx = sessions.length - 1 - i;
+          // rows is sorted by date, find original index in sessions array:
+          const idx = sessions.indexOf(s);
 
           const dateLabel = formatDate(s.start);
           const debut = s.start ? formatTimeFull(s.start) : '-';
