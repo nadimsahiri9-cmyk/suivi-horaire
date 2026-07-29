@@ -220,12 +220,18 @@
         <span class="text-gray-500 text-xs ml-2">(sessions)</span>
       </div>
 
-      <div class="flex gap-3">
+      <div class="flex flex-wrap gap-3">
         <button id="btnExportCSV"
                 class="px-5 py-2.5 rounded-xl bg-gray-800 border border-gray-600 text-gray-200 font-medium text-sm
                        hover:bg-gray-700 hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500
                        shadow-sm transition-colors">
           ⬇ Exporter CSV
+        </button>
+        <button id="btnRestore"
+                class="px-5 py-2.5 rounded-xl bg-gray-800 border border-amber-700/60 text-amber-400 font-medium text-sm
+                       hover:bg-amber-900/30 hover:border-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500/40
+                       shadow-sm transition-colors">
+          ↩ Restaurer
         </button>
         <button id="btnEffacerTout"
                 class="px-5 py-2.5 rounded-xl bg-gray-800 border border-red-700/60 text-red-400 font-medium text-sm
@@ -248,6 +254,7 @@
 
       // ---- State ----
       const STORAGE_KEY = 'suivi_horaire_nadim';
+      const BKP_KEY = 'suivi_horaire_nadim_bkp';
       let sessions = [];
       let selectedVan = '';
 
@@ -262,6 +269,7 @@
       const totalContainer = $('totalContainer');
       const totalHeures = $('totalHeures');
       const btnExportCSV = $('btnExportCSV');
+      const btnRestore = $('btnRestore');
       const btnEffacerTout = $('btnEffacerTout');
       const btnAjoutManuel = $('btnAjoutManuel');
       const formAjoutManuel = $('formAjoutManuel');
@@ -377,6 +385,17 @@
       }
 
       function save() {
+        // Auto-backup: sauvegarde l'état actuel avant d'écraser
+        try {
+          const prev = localStorage.getItem(STORAGE_KEY);
+          if (prev) {
+            const backups = JSON.parse(localStorage.getItem(BKP_KEY) || '[]');
+            backups.push({ data: prev, time: Date.now() });
+            // Garde les 15 dernières sauvegardes
+            if (backups.length > 15) backups.splice(0, backups.length - 15);
+            localStorage.setItem(BKP_KEY, JSON.stringify(backups));
+          }
+        } catch (_) {}
         localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
       }
 
@@ -750,6 +769,44 @@
       // ---- Bind buttons ----
       btnDepart.addEventListener('click', doDepart);
       btnFin.addEventListener('click', doFin);
+      function doRestore() {
+        const backups = JSON.parse(localStorage.getItem(BKP_KEY) || '[]');
+        if (backups.length === 0) {
+          alert('Aucune sauvegarde disponible.');
+          return;
+        }
+        let msg = 'Choisissez une sauvegarde à restaurer :\n\n';
+        // Afficher les 5 dernières
+        const show = backups.slice(-5).reverse();
+        show.forEach((b, i) => {
+          const d = new Date(b.time).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+          const preview = b.data.slice(0, 60) + '...';
+          msg += `\n${i+1}. [${d}]\n`;
+        });
+        msg += '\nEntrez le numéro (1-5), ou 0 pour annuler :';
+        const choice = prompt(msg);
+        if (!choice) return;
+        const idx = parseInt(choice, 10);
+        if (idx < 1 || idx > 5 || idx > show.length) {
+          alert('Choix invalide.');
+          return;
+        }
+        const chosen = show[idx - 1];
+        const d = new Date(chosen.time).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+        if (!confirm(`Restaurer la sauvegarde du ${d} ? Les données actuelles seront perdues.`)) return;
+        if (!confirm('Confirmation finale : remplacer toutes les données par cette sauvegarde ?')) return;
+        try {
+          sessions = JSON.parse(chosen.data);
+          if (!Array.isArray(sessions)) sessions = [];
+          save();
+          render();
+          alert('✅ Sauvegarde restaurée.');
+        } catch(e) {
+          alert('Erreur : sauvegarde corrompue.');
+        }
+      }
+
+      btnRestore.addEventListener('click', doRestore);
       btnExportCSV.addEventListener('click', doExportCSV);
       btnEffacerTout.addEventListener('click', doEffacerTout);
 
