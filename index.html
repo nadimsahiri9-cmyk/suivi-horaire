@@ -405,7 +405,7 @@
       }
 
       function render() {
-        const rows = [...sessions].reverse(); // plus recent en haut
+        const rows = [...sessions]; // plus ancien en haut
 
         if (rows.length === 0) {
           tableBody.innerHTML = '';
