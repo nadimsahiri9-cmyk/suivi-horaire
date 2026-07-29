@@ -696,15 +696,22 @@
         const startISO = dateVal + 'T' + debutVal + ':00';
         const endISO   = dateVal + 'T' + finVal   + ':00';
 
-        // Verifier que debut < fin
-        if (new Date(endISO) <= new Date(startISO)) {
+        // Verifier que debut < fin (gère le chevauchement minuit)
+        const debutDate = new Date(startISO);
+        let finDate = new Date(endISO);
+        if (finDate <= debutDate) {
+          // Si fin <= debut sur la même date, on ajoute 1 jour => session de nuit
+          finDate = new Date(finDate.getTime() + 86400000);
+        }
+        const finalEndISO = finDate.toISOString().slice(0, 19);
+        if (finDate <= debutDate) {
           alert('L\'heure de fin doit etre apres l\'heure de debut.');
           return;
         }
 
         sessions.push({
           start: startISO,
-          end: endISO,
+          end: finalEndISO,
           van: vanVal,
           argent: argentVal,
           remark: remarqueVal
