@@ -331,6 +331,16 @@
         return { label: `${h}h ${pad2(m)}m ${pad2(s)}s`, totalMin, totalSec };
       }
 
+      function isoToDateInput(iso) {
+        if (!iso) return '';
+        return iso.slice(0, 10);
+      }
+
+      function isoToTimeInput(iso) {
+        if (!iso) return '';
+        return iso.slice(11, 16);
+      }
+
       // ---- Van helpers ----
       function highlightVanGlobalBtn(value) {
         document.querySelectorAll('.btn-van').forEach(btn => {
@@ -462,9 +472,9 @@
           // rows is sorted by date, find original index in sessions array:
           const idx = sessions.indexOf(s);
 
-          const dateLabel = formatDate(s.start);
-          const debut = s.start ? formatTimeFull(s.start) : '-';
-          const fin   = s.end   ? formatTimeFull(s.end)   : '\u2014';
+          const dateVal = isoToDateInput(s.start);
+          const debutVal = isoToTimeInput(s.start);
+          const finVal = s.end ? isoToTimeInput(s.end) : '';
           const dur   = s.start && s.end ? computeDuration(s.start, s.end).label : '\u2014';
           const van   = s.van || '';
           const argent = s.argent !== undefined && s.argent !== '' ? s.argent : '';
@@ -473,9 +483,25 @@
           const isActive = s.start && !s.end;
 
           html += `<tr class="hover:bg-gray-700/50 transition-colors fade-in ${isActive ? 'bg-blue-900/20' : ''}" data-idx="${idx}">`;
-          html += `<td class="px-3 py-3 whitespace-nowrap font-medium text-gray-200">${dateLabel}</td>`;
-          html += `<td class="px-3 py-3 whitespace-nowrap font-mono text-xs ${isActive ? 'text-blue-300' : 'text-gray-400'}">${debut}</td>`;
-          html += `<td class="px-3 py-3 whitespace-nowrap font-mono text-xs ${isActive ? 'text-gray-500 italic' : 'text-gray-400'}">${fin}</td>`;
+          html += `<td class="px-3 py-3 whitespace-nowrap">`;
+          html += `<input type="date" data-date-idx="${idx}" value="${dateVal}"
+                    class="w-32 px-2 py-1.5 bg-gray-700/50 border border-gray-600 rounded-lg text-xs text-gray-200
+                           focus:bg-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition-all color-scheme-dark">`;
+          html += `</td>`;
+          html += `<td class="px-3 py-3 whitespace-nowrap">`;
+          html += `<input type="time" data-debut-idx="${idx}" value="${debutVal}"
+                    class="w-24 px-2 py-1.5 bg-gray-700/50 border border-gray-600 rounded-lg text-xs text-gray-200 font-mono
+                           focus:bg-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition-all color-scheme-dark">`;
+          html += `</td>`;
+          html += `<td class="px-3 py-3 whitespace-nowrap">`;
+          if (s.end) {
+            html += `<input type="time" data-fin-idx="${idx}" value="${finVal}"
+                      class="w-24 px-2 py-1.5 bg-gray-700/50 border border-gray-600 rounded-lg text-xs text-gray-200 font-mono
+                             focus:bg-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition-all color-scheme-dark">`;
+          } else {
+            html += `<span class="text-gray-500 italic font-mono text-xs">\u2014</span>`;
+          }
+          html += `</td>`;
           html += `<td class="px-3 py-3 whitespace-nowrap font-mono text-xs font-medium ${dur.includes('Invalide') ? 'text-amber-400' : 'text-gray-200'}">${dur}</td>`;
           // Van column - 3 small buttons
           html += `<td class="px-3 py-3 whitespace-nowrap">`;
@@ -539,6 +565,47 @@
             const idx = parseInt(this.dataset.argentIdx, 10);
             sessions[idx].argent = this.value;
             save();
+          });
+        });
+
+        // Date input - auto-save
+        tableBody.querySelectorAll('[data-date-idx]').forEach(inp => {
+          inp.addEventListener('change', function() {
+            const idx = parseInt(this.dataset.dateIdx, 10);
+            const s = sessions[idx];
+            if (!s.start) return;
+            const timePart = s.start.slice(11);
+            s.start = this.value + 'T' + timePart;
+            save();
+            render();
+          });
+        });
+
+        // Début time input - auto-save
+        tableBody.querySelectorAll('[data-debut-idx]').forEach(inp => {
+          inp.addEventListener('change', function() {
+            const idx = parseInt(this.dataset.debutIdx, 10);
+            const s = sessions[idx];
+            if (!s.start) return;
+            const datePart = s.start.slice(0, 11);
+            const afterTime = s.start.slice(19);
+            s.start = datePart + this.value + ':00' + afterTime;
+            save();
+            render();
+          });
+        });
+
+        // Fin time input - auto-save
+        tableBody.querySelectorAll('[data-fin-idx]').forEach(inp => {
+          inp.addEventListener('change', function() {
+            const idx = parseInt(this.dataset.finIdx, 10);
+            const s = sessions[idx];
+            if (!s.end) return;
+            const datePart = s.end.slice(0, 11);
+            const afterTime = s.end.slice(19);
+            s.end = datePart + this.value + ':00' + afterTime;
+            save();
+            render();
           });
         });
 
