@@ -200,6 +200,13 @@
             </tr>
           </thead>
           <tbody id="tableBody" class="divide-y divide-gray-700"></tbody>
+          <tfoot id="tableFoot" class="hidden border-t-2 border-indigo-500/40 bg-gray-800/80">
+            <tr>
+              <td colspan="5" class="px-3 py-3 text-right text-gray-300 font-semibold text-xs">Total argent</td>
+              <td class="px-3 py-3 font-mono font-bold text-indigo-300 text-sm" id="totalArgent">0,00 €</td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
         </table>
       </div>
 
@@ -449,6 +456,22 @@
           totalHeures.textContent = `${h}h ${pad2(m)}m ${pad2(s)}s`;
         } else {
           totalContainer.classList.add('hidden');
+        }
+
+        // Calcul du total argent
+        let totalArgent = 0;
+        rows.forEach(s => {
+          const val = parseFloat(s.argent);
+          if (!isNaN(val)) totalArgent += val;
+        });
+
+        const footEl = document.getElementById('tableFoot');
+        const totalArgentEl = document.getElementById('totalArgent');
+        if (rows.length > 0) {
+          footEl.classList.remove('hidden');
+          totalArgentEl.textContent = totalArgent.toFixed(2).replace('.', ',') + ' €';
+        } else {
+          footEl.classList.add('hidden');
         }
 
         // Verifier session active
