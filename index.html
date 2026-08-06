@@ -328,7 +328,13 @@
 
       function computeDuration(startISO, endISO) {
         if (!startISO || !endISO) return { label: '-', totalMin: 0, totalSec: 0 };
-        const diff = new Date(endISO) - new Date(startISO);
+        let diff = new Date(endISO) - new Date(startISO);
+        if (diff < 0) {
+          // Fin avant debut sur la meme date => session qui passe minuit (lendemain)
+          const endNextDay = new Date(endISO);
+          endNextDay.setDate(endNextDay.getDate() + 1);
+          diff = endNextDay - new Date(startISO);
+        }
         if (diff < 0) return { label: '\u26a0 Invalide', totalMin: 0, totalSec: 0 };
         const totalSec = Math.floor(diff / 1000);
         const h = Math.floor(totalSec / 3600);
@@ -591,14 +597,23 @@
           });
         });
 
-        // Date input - auto-save
+        // Date input - auto-save (decale aussi la fin si la date change)
         tableBody.querySelectorAll('[data-date-idx]').forEach(inp => {
           inp.addEventListener('change', function() {
             const idx = parseInt(this.dataset.dateIdx, 10);
             const s = sessions[idx];
             if (!s.start) return;
+            const oldStartDate = s.start.slice(0, 10);
+            const diffDays = Math.round((new Date(this.value + 'T00:00:00') - new Date(oldStartDate + 'T00:00:00')) / 86400000);
             const timePart = s.start.slice(11);
             s.start = this.value + 'T' + timePart;
+            if (s.end) {
+              const d = new Date(s.end.slice(0, 10) + 'T00:00:00');
+              d.setDate(d.getDate() + diffDays);
+              s.end = d.getFullYear() + '-' +
+                      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                      String(d.getDate()).padStart(2, '0') + 'T' + s.end.slice(11);
+            }
             save();
             render();
           });
@@ -612,21 +627,38 @@
             if (!s.start) return;
             const datePart = s.start.slice(0, 11);
             const afterTime = s.start.slice(19);
+            // Si le nouveau debut est apres la fin (meme jour) => la fin passe au lendemain
+            if (s.end && s.end.slice(0, 10) <= s.start.slice(0, 10) && this.value >= isoToTimeInput(s.end)) {
+              const d = new Date(s.start.slice(0, 10) + 'T00:00:00');
+              d.setDate(d.getDate() + 1);
+              s.end = d.getFullYear() + '-' +
+                      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                      String(d.getDate()).padStart(2, '0') + 'T' + isoToTimeInput(s.end) + ':00' + s.end.slice(19);
+            }
             s.start = datePart + this.value + ':00' + afterTime;
             save();
             render();
           });
         });
 
-        // Fin time input - auto-save
+        // Fin time input - auto-save (fin avant debut => lendemain)
         tableBody.querySelectorAll('[data-fin-idx]').forEach(inp => {
           inp.addEventListener('change', function() {
             const idx = parseInt(this.dataset.finIdx, 10);
             const s = sessions[idx];
             if (!s.end) return;
-            const datePart = s.end.slice(0, 11);
             const afterTime = s.end.slice(19);
-            s.end = datePart + this.value + ':00' + afterTime;
+            // Si fin <= debut sur la meme date => la fin est le lendemain
+            if (s.end.slice(0, 10) <= s.start.slice(0, 10) && this.value <= isoToTimeInput(s.start)) {
+              const d = new Date(s.start.slice(0, 10) + 'T00:00:00');
+              d.setDate(d.getDate() + 1);
+              s.end = d.getFullYear() + '-' +
+                      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                      String(d.getDate()).padStart(2, '0') + 'T' + this.value + ':00' + afterTime;
+            } else {
+              const datePart = s.end.slice(0, 11);
+              s.end = datePart + this.value + ':00' + afterTime;
+            }
             save();
             render();
           });
@@ -802,25 +834,21 @@
           return;
         }
         // Construire des ISO a partir de la date et des heures
+        // Si fin <= debut => la fin est le lendemain (session de nuit)
+        let endDateVal = dateVal;
+        if (finVal <= debutVal) {
+          const d = new Date(dateVal + 'T00:00:00');
+          d.setDate(d.getDate() + 1);
+          endDateVal = d.getFullYear() + '-' +
+                       String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                       String(d.getDate()).padStart(2, '0');
+        }
         const startISO = dateVal + 'T' + debutVal + ':00';
-        const endISO   = dateVal + 'T' + finVal   + ':00';
-
-        // Verifier que debut < fin (gère le chevauchement minuit)
-        const debutDate = new Date(startISO);
-        let finDate = new Date(endISO);
-        if (finDate <= debutDate) {
-          // Si fin <= debut sur la même date, on ajoute 1 jour => session de nuit
-          finDate = new Date(finDate.getTime() + 86400000);
-        }
-        const finalEndISO = finDate.toISOString().slice(0, 19);
-        if (finDate <= debutDate) {
-          alert('L\'heure de fin doit etre apres l\'heure de debut.');
-          return;
-        }
+        const endISO   = endDateVal + 'T' + finVal   + ':00';
 
         sessions.push({
           start: startISO,
-          end: finalEndISO,
+          end: endISO,
           van: vanVal,
           argent: argentVal,
           remark: remarqueVal
