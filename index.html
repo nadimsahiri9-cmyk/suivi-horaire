@@ -918,6 +918,8 @@
           if (!Array.isArray(sessions)) sessions = [];
           save();
           render();
+          hideFormAjout();
+          resetFormAjout();
           alert('✅ Sauvegarde restaurée.');
         } catch(e) {
           alert('Erreur : sauvegarde corrompue.');
