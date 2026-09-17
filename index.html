@@ -437,6 +437,17 @@
       function render() {
         const rows = [...sessions].sort((a, b) => new Date(a.start) - new Date(b.start)); // trié par date croissante
 
+        // Filtrer les lignes du mois courant pour l'affichage
+        const filteredRows = rows.filter(s => s.start && s.start.slice(0, 7) === currentMonth);
+        const displayRows = filteredRows;
+
+        // Label mois lisible
+        function monthLabel(ym) {
+          const [y, m] = ym.split('-');
+          const months = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+          return months[parseInt(m,10)-1] + ' ' + y;
+        }
+
         if (rows.length === 0) {
           tableBody.innerHTML = '';
           emptyState.classList.remove('hidden');
@@ -488,9 +499,7 @@
           document.getElementById('totalMoisHeures').textContent = `${mh}h ${pad2(mm)}m ${pad2(ms)}s`;
 
           // Label du mois
-          const [moisY, moisM] = currentMonth.split('-');
-          const months = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-          document.getElementById('moisLabel').textContent = `${months[parseInt(moisM,10)-1]} ${moisY}`;
+          document.getElementById('moisLabel').textContent = monthLabel(currentMonth);
         } else {
           totalContainer.classList.add('hidden');
         }
@@ -527,9 +536,9 @@
         // Build table HTML
         let html = '';
 
-        for (let i = 0; i < rows.length; i++) {
-          const s = rows[i];
-          // rows is sorted by date, find original index in sessions array:
+        for (let i = 0; i < displayRows.length; i++) {
+          const s = displayRows[i];
+          // displayRows is sorted by date, find original index in sessions array:
           const idx = sessions.indexOf(s);
 
           const dateVal = isoToDateInput(s.start);
