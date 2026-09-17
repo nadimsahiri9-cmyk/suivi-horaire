@@ -219,12 +219,18 @@
 
     <!-- Footer totals + export -->
     <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 no-print">
-      <div id="totalContainer" class="hidden">
+      <div id="totalContainer" class="hidden flex flex-wrap items-center gap-4">
         <span class="total-badge inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white text-sm font-semibold shadow">
-          <span>📊 Total</span>
+          <span>📊 Total général</span>
           <span id="totalHeures" class="font-mono">0h 00m 00s</span>
         </span>
-        <span class="text-gray-500 text-xs ml-2">(sessions)</span>
+        <span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-900/60 border border-indigo-500/40 text-white text-sm font-semibold shadow">
+          <button id="btnMoisPrev" class="hover:text-indigo-300 transition-colors text-lg leading-none px-1" title="Mois précédent">◀</button>
+          <span class="font-medium min-w-[120px] text-center" id="moisLabel">—</span>
+          <button id="btnMoisNext" class="hover:text-indigo-300 transition-colors text-lg leading-none px-1" title="Mois suivant">▶</button>
+          <span id="totalMoisHeures" class="font-mono ml-1">0h 00m 00s</span>
+        </span>
+        <span class="text-gray-500 text-xs">(sessions)</span>
       </div>
 
       <div class="flex flex-wrap gap-3">
@@ -264,6 +270,7 @@
       const BKP_KEY = 'suivi_horaire_nadim_bkp';
       let sessions = [];
       let selectedVan = '';
+      let currentMonth = ''; // format 'YYYY-MM'
 
       // ---- DOM refs ----
       const $ = id => document.getElementById(id);
@@ -442,7 +449,7 @@
 
         emptyState.classList.add('hidden');
 
-        // Calcul du total
+        // Calcul du total général
         let totalMin = 0;
         let sessionCount = 0;
         rows.forEach(s => {
@@ -453,6 +460,18 @@
           }
         });
 
+        // Calcul du total du mois
+        let totalMoisMin = 0;
+        rows.forEach(s => {
+          if (s.start && s.end) {
+            const sessionMonth = s.start.slice(0, 7); // 'YYYY-MM'
+            if (sessionMonth === currentMonth) {
+              const dur = computeDuration(s.start, s.end);
+              totalMoisMin += dur.totalMin;
+            }
+          }
+        });
+
         if (sessionCount > 0) {
           totalContainer.classList.remove('hidden');
           const tSec = totalMin * 60;
@@ -460,6 +479,18 @@
           const m = Math.floor((tSec % 3600) / 60);
           const s = tSec % 60;
           totalHeures.textContent = `${h}h ${pad2(m)}m ${pad2(s)}s`;
+
+          // Total mois
+          const mSec = totalMoisMin * 60;
+          const mh = Math.floor(mSec / 3600);
+          const mm = Math.floor((mSec % 3600) / 60);
+          const ms = mSec % 60;
+          document.getElementById('totalMoisHeures').textContent = `${mh}h ${pad2(mm)}m ${pad2(ms)}s`;
+
+          // Label du mois
+          const [y, m] = currentMonth.split('-');
+          const months = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+          document.getElementById('moisLabel').textContent = `${months[parseInt(m,10)-1]} ${y}`;
         } else {
           totalContainer.classList.add('hidden');
         }
@@ -762,9 +793,42 @@
         render();
       }
 
+      // ---- Navigation mois ----
+      const $btnMoisPrev = document.getElementById('btnMoisPrev');
+      const $btnMoisNext = document.getElementById('btnMoisNext');
+
+      $btnMoisPrev.addEventListener('click', function() {
+        const [y, m] = currentMonth.split('-').map(Number);
+        const d = new Date(y, m - 2, 1); // mois précédent
+        currentMonth = monthStr(d.getFullYear(), d.getMonth());
+        render();
+      });
+
+      $btnMoisNext.addEventListener('click', function() {
+        const [y, m] = currentMonth.split('-').map(Number);
+        const d = new Date(y, m, 1); // mois suivant
+        currentMonth = monthStr(d.getFullYear(), d.getMonth());
+        render();
+      });
+
       // ---- Init ----
+      {
+        const now = new Date();
+        currentMonth = monthStr(now.getFullYear(), now.getMonth());
+      }
       load();
       render();
+
+      // ---- Auto-advance month every day at midnight ----
+      // Verifie chaque minute si le mois a changé
+      setInterval(function() {
+        const now = new Date();
+        const realMonth = monthStr(now.getFullYear(), now.getMonth());
+        if (realMonth !== currentMonth) {
+          currentMonth = realMonth;
+          render();
+        }
+      }, 60000);
 
       // ---- Keyboard shortcuts ----
       document.addEventListener('keydown', function(e) {
@@ -790,6 +854,10 @@
       });
 
       // ---- Ajout manuel ----
+      function monthStr(year, month) {
+        return year + '-' + String(month + 1).padStart(2, '0');
+      }
+
       function todayStr() {
         const d = new Date();
         return d.getFullYear() + '-' +
@@ -931,7 +999,7 @@
       btnEffacerTout.addEventListener('click', doEffacerTout);
 
       // --- Expose to window for debug ---
-      window.__suivi = { sessions, selectedVan, load, save, render, doDepart, doFin };
+      window.__suivi = { sessions, selectedVan, currentMonth, load, save, render, doDepart, doFin };
 
     })();
   </script>
