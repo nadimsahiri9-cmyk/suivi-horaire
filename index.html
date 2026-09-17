@@ -488,9 +488,9 @@
           document.getElementById('totalMoisHeures').textContent = `${mh}h ${pad2(mm)}m ${pad2(ms)}s`;
 
           // Label du mois
-          const [y, m] = currentMonth.split('-');
+          const [moisY, moisM] = currentMonth.split('-');
           const months = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-          document.getElementById('moisLabel').textContent = `${months[parseInt(m,10)-1]} ${y}`;
+          document.getElementById('moisLabel').textContent = `${months[parseInt(moisM,10)-1]} ${moisY}`;
         } else {
           totalContainer.classList.add('hidden');
         }
